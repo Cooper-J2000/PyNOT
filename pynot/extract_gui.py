@@ -2004,7 +2004,12 @@ class ExtractGUI(QtWidgets.QMainWindow):
                     err1d = np.sqrt(np.sum(M*P, axis=0) / np.sum(M*P**2/V, axis=0))
                 err1d = fix_nans(err1d)
                 bg1d = np.sum(M*P*bg2d, axis=0) / np.sum(M*P**2, axis=0)
-                mask1d = np.sum((1-M)*P, axis=0) / np.sum((1-M)*P**2, axis=0) > 0
+                # Mask a column only if bad pixels carry >5% of the total profile
+                # weight (see extraction.py; upstream masked the whole column if
+                # ANY pixel with P>0 was bad).
+                # [LOCAL MODIFICATION -- not in upstream PyNOT]
+                bad_weight_frac = np.sum((1-M)*P, axis=0) / np.sum(P, axis=0)
+                mask1d = bad_weight_frac > 0.05
 
             wl = self.image2d.wl
             spec_hdr = self.image2d.header.copy()

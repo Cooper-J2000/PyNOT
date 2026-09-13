@@ -485,7 +485,13 @@ def auto_extract_img(img2D, err2D, *, N=None, pdf_fname=None, mask=None, model_n
             var1D = np.sum(M*P, axis=0) / np.sum(M*P**2/var2D, axis=0)
             err1D = np.sqrt(var1D)
             err1D = fix_nans(err1D)
-            mask1D = np.sum((1-M)*P, axis=0) / np.sum((1-M)*P**2, axis=0) > 0
+            # Mask a column only if bad pixels carry >5% of the total profile
+            # weight. (Upstream masked the whole column if ANY pixel with P>0
+            # was bad -- since the Moffat wings are nonzero everywhere, a single
+            # bad pixel far from the aperture killed the entire column.)
+            # [LOCAL MODIFICATION -- not in upstream PyNOT]
+            bad_weight_frac = np.sum((1-M)*P, axis=0) / np.sum(P, axis=0)
+            mask1D = bad_weight_frac > 0.05
             trace_pos = np.median(info_dict['fit_mu'])
             spectra.append([spec1D, err1D, mask1D, trace_pos])
 
