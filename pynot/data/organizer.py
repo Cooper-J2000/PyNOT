@@ -137,6 +137,33 @@ def match_single_calib(raw_img, database, tag, log, **kwargs):
     return calib_list[0]
 
 
+def select_arc_frame(sci_img, database, log, prefer_lamp='HeNe', **match_kwargs):
+    """Select the arc lamp frame used for wavelength calibration.
+
+    Among the arcs matching the given criteria (e.g. grism/slit/filter),
+    prefer arcs taken with the `prefer_lamp` lamp on the same night
+    (MJD within ±0.4 d), then pick the one closest in time. If no same-night
+    arc of the preferred lamp exists, fall back to the original behavior:
+    the matching arc closest in time (any lamp, any night).
+    Set `prefer_lamp` to '' to disable the preference.
+
+    [LOCAL MODIFICATION -- not in upstream PyNOT]
+    """
+    arc_list = database['ARC_CORR']
+    if prefer_lamp:
+        same_night = sci_img.match_files(arc_list, date=True, **match_kwargs)
+        preferred = [fname for fname in same_night
+                     if prefer_lamp.lower() in instrument.get_object(fits.getheader(fname)).lower()]
+        if preferred:
+            arc_fname = sci_img.match_files(preferred, date=False, binning=False, shape=False,
+                                            get_closest_time=True)[0]
+            log.write("          - Arc lamp preference (%s): using %s"
+                      % (prefer_lamp, os.path.basename(arc_fname)))
+            return arc_fname
+    return match_single_calib(sci_img, database, 'ARC_CORR', log, date=False,
+                              get_closest_time=True, **match_kwargs)
+
+
 def sort_spec_flat(file_list, date=False):
     """
     Sort spectroscopic flat frames by grism, slit, filter and image size
