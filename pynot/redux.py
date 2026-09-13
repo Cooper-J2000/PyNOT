@@ -355,8 +355,9 @@ def run_pipeline(options_fname, object_id=None, verbose=True, interactive=False,
 
                     # Find Arc Frame:
                     try:
-                        arc_fname = do.match_single_calib(sci_img, database, 'ARC_CORR', log, date=False,
-                                                          grism=True, slit=True, get_closest_time=True)
+                        arc_fname = do.select_arc_frame(sci_img, database, log,
+                                                        prefer_lamp=task_options['identify'].get('prefer_lamp', 'HeNe'),
+                                                        grism=True, slit=True)
                     except Exception:
                         log.fatal_error()
                         raise

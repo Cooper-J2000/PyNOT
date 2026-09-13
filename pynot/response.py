@@ -671,9 +671,9 @@ def task_response(options, database, status, log=None, verbose=True, app=None, o
             master_bias = organizer.match_single_calib(raw_img, database, 'MBIAS', log, date=False)
             norm_flat = organizer.match_single_calib(raw_img, database, 'NORM_SFLAT', log, date=False,
                                                      grism=True, slit=True, filter=True)
-            arc_fname = organizer.match_single_calib(raw_img, database, 'ARC_CORR', log, date=False,
-                                                     grism=True, slit=False, filter=True,
-                                                     get_closest_time=True)
+            arc_fname = organizer.select_arc_frame(raw_img, database, log,
+                                                   prefer_lamp=options['identify'].get('prefer_lamp', 'HeNe'),
+                                                   grism=True, slit=False, filter=True)
             pixtab_fnames = status.find_pixtab(grism)
             pixtable = pixtab_fnames[0]
 
