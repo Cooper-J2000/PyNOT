@@ -34,7 +34,8 @@ flat:
   edge_width :    10         # The minimum width of peaks in the derivative for edge detection
 
 identify:
-  interactive: True          # Identify lines interactively using a graphical interface
+  interactive: False          # Identify lines interactively using a graphical interface
+  prefer_lamp: HeNe          # Prefer arcs of this lamp type taken on the same night ('' disables; local mod, not upstream)
   order_wl:    3             # Polynomial order used for wavelength fit as a function of input pixel
   all:         False         # Interactively reidentify arc reference frame for each target?
   loc:         -1            # Extract the 1D spectrum of the arc image at this column ID. If -1, use image midpoint.
@@ -69,7 +70,7 @@ skysub:
   xmax:        null          # Mask out pixels above xmax
 
 extract:
-  interactive:  False        # Extract the 1D spectrum using a graphical user interface?
+  interactive:  False         # Extract the 1D spectrum using a graphical user interface?
   model_name:   'moffat'     # Profile type for optimal extraction 'moffat' or 'gaussian', otherwise 'tophat'
   dx:           25           # Fit the spectral trace for every `dx` pixels along dispersion axis
   width_scale:  2            # If model_name is 'tophat', this scales the width in terms of FWHM below and above the centroid
@@ -90,7 +91,7 @@ response:
   smoothing:    0.02         # Smoothing scale of the spline interpolation.
   med_filter:   5            # Median filter width for removing outlying response points
   kappa:        2            # Threshold for the median filtering to remove outlying response points
-  interactive:  False        # Interactively filter and fit the response function
+  interactive:  False         # Interactively filter and fit the response function
   force:        False        # Overwrite existing response function?
   match_date:   False        # Use only response functions taken on the same day as the science exposure?
   match_slit:   False        # Match both GRISM and SLIT of the science observations?
