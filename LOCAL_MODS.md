@@ -1,11 +1,11 @@
 # Local modifications (`local/alfosc-tweaks`)
 
 This branch tracks the local modifications applied to our PyNOT-redux installation for
-NOT/ALFOSC spectroscopy. Branch base: **v2.4.3** (`246fca1`, upstream `master`, 2026-09-23);
-originally branched off v2.4.1 (`53ad8d82`) and rebased onto upstream `master` on
-2026-09-28 (clean, no conflicts). Nothing here has been submitted upstream; each item is a
-separate commit so the branch can be rebased onto a new upstream release without hunting
-for patch context.
+NOT/ALFOSC spectroscopy. Branch base: **v2.4.4** (`3ce1ac1`, upstream `master`, 2026-10-03);
+previously branched off v2.4.1 (`53ad8d82`), rebased onto upstream `master` on 2026-09-28 and
+again on 2026-10-03. Each item is a separate commit so the branch can be rebased onto a new
+upstream release without hunting for patch context. Item 5 has since been merged upstream
+(PR #56) and is *no longer* carried by this branch.
 
 | # | Commit subject | Files | Upstream status |
 |---|---|---|---|
@@ -13,6 +13,7 @@ for patch context.
 | 2 | mask1D: weight bad pixels instead of killing whole columns | `pynot/extraction.py`, `pynot/extract_gui.py` | not submitted |
 | 3 | Local defaults: non-interactive, `prefer_lamp: HeNe` | `pynot/calib/default_options.yml` | local preference only |
 | 4 | Locally calibrated 11-line `al-gr4` pixel table | `pynot/calib/al-gr4_pixeltable.dat` | instrument-specific data |
+| 5 | Response function: keep first/last reference points (far-red flux fix) | `pynot/response.py` | **merged upstream: PR #56** (v2.4.4, merge `90856c7`) — local patch dropped |
 
 ## 1. Arc lamp selection: prefer same-night HeNe
 
@@ -76,6 +77,33 @@ identified, 2026-08-09) used as the global wavelength reference for Grism #4. Re
 the wavelength solution whenever the night-to-night drift exceeds `fit_window`
 (10 px ≈ 34 Å).
 
+## 5. Response function endpoints — merged upstream, no longer carried here
+
+`response.py` implements the response calculation twice. The standalone
+`calculate_response()` protects the ends of the curve
+(`good[:3] = True; good[-3:] = True`), but the copy used by the pipeline inside
+`task_response()` had those two lines commented out, so the bare criterion was applied:
+
+```python
+good = np.abs(flux0 - med_flux_tab) < options['response']['kappa']*noise   # kappa = 2
+noise = 1.5 * MAD(flux0 - med_flux_tab)
+```
+
+That criterion is *absolute*, while the standard star's count rate varies by a large factor
+across the spectrum, and `median_filter` runs along the *index* axis of the reference table,
+whose wavelength sampling jumps to 400–500 Å in the far red (rows beyond the extracted range
+are dropped). For HD19445 with ALFOSC/grism 4 the last three usable rows — 8370, 8780 and
+9300 Å, i.e. every point that constrains the sensitivity above ~8000 Å — were rejected, the
+response spline was extrapolated past ~8100 Å and the derived sensitivity came out
+0.25–0.42 mag too low. Flux-calibrated spectra were therefore 20–45 % too bright for
+λ > 8400 Å.
+
+We carried the fix locally (commit `c7c2ba6`) while it was verified on two nights of
+NOT/ALFOSC grism-4 data, then submitted it upstream. Jens-Kristian Krogager merged it on
+2026-10-03 (**PR #56**, merge commit `90856c7`, released in **v2.4.4**), so the local commit
+was **dropped** in the v2.4.4 rebase: `pynot/response.py` in this branch is now identical to
+upstream. Do not re-add it — just make sure the installed version is ≥ v2.4.4.
+
 ## Rebuilding an installation from this branch
 
 ```bash
@@ -94,4 +122,7 @@ as `calib/al-gr4_pixeltable.dat.orig`.
   PR #47 (NumPy 2 compatibility in `pynot phot`, from this fork), #50–#52 (auto-extraction
   `OverflowError`), #49 (`response.match_slit` / `match_date`), #54 (`save_database`
   in-place `+=` leak, from issue #53).
+- Item 5 is **merged**: PR #56 (`response: keep first/last reference points in
+  task_response`), submitted 2026-09-28, merged by jkrogager on 2026-10-03 (merge commit
+  `90856c7`, released in v2.4.4, and the head branch was deleted from the fork afterwards).
 - Items 1 and 2 above are the remaining candidates for an upstream PR.
