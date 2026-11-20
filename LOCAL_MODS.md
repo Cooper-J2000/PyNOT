@@ -1,11 +1,10 @@
 # Local modifications (`local/alfosc-tweaks`)
 
 This branch tracks the local modifications applied to our PyNOT-redux installation for
-NOT/ALFOSC spectroscopy. Branch base: **v2.4.4** (`3ce1ac1`, upstream `master`, 2026-10-03);
-previously branched off v2.4.1 (`53ad8d82`), rebased onto upstream `master` on 2026-09-28 and
-again on 2026-10-03. Each item is a separate commit so the branch can be rebased onto a new
-upstream release without hunting for patch context. Item 5 has since been merged upstream
-(PR #56) and is *no longer* carried by this branch.
+NOT/ALFOSC spectroscopy. It is synced through **v2.4.6** (`c344217`, upstream `master`,
+2026-11-18); the original v2.4.4 base (`3ce1ac1`) was merged with upstream on 2026-11-20.
+Previously the branch was rebased onto upstream releases, with each item kept in a separate
+commit. Item 5 has been merged upstream (PR #56) and is *no longer* carried as a local patch.
 
 | # | Commit subject | Files | Upstream status |
 |---|---|---|---|
@@ -108,15 +107,16 @@ upstream. Do not re-add it — just make sure the installed version is ≥ v2.4.
 
 ```bash
 git clone -b local/alfosc-tweaks https://github.com/Cooper-J2000/PyNOT.git
-~/miniconda3/envs/pynot/bin/pip install --no-deps --force-reinstall ./PyNOT
-# note: the wheel ships code only -- copy calib/ data files (standard star library, pixel
-# tables) from the source tree as needed
+~/miniconda3/envs/pynot/bin/pip install --no-deps -e ./PyNOT
 ```
+
+The editable installation uses the calibration data and local modifications directly from
+this branch.
 
 The original (pre-change) `al-gr4` table is kept in the working copy of our installation
 as `calib/al-gr4_pixeltable.dat.orig`.
 
-## Reporting upstream
+## Upstream status and local-only policy
 
 - Most of the upstream fixes this installation depends on are already merged:
   PR #47 (NumPy 2 compatibility in `pynot phot`, from this fork), #50–#52 (auto-extraction
@@ -125,4 +125,5 @@ as `calib/al-gr4_pixeltable.dat.orig`.
 - Item 5 is **merged**: PR #56 (`response: keep first/last reference points in
   task_response`), submitted 2026-09-28, merged by jkrogager on 2026-10-03 (merge commit
   `90856c7`, released in v2.4.4, and the head branch was deleted from the fork afterwards).
-- Items 1 and 2 above are the remaining candidates for an upstream PR.
+- Items 1–4 remain maintained only in this personal fork. Do not submit them as upstream
+  pull requests.
